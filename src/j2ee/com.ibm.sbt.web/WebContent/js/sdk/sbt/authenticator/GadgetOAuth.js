@@ -39,8 +39,7 @@ define([ "sbt/_bridge/declare", "sbt/lang" ], function(declare,lang) {
             };
             var onClose = function() {
             };
-            var response = options.error.response;
-            var popup = new gadgets.oauth.Popup(response.oauthApprovalUrl, null, onOpen, onClose);
+            var popup = new gadgets.oauth.Popup(this.url, null, onOpen, onClose);
             popup.createOpenerOnClick();
         }
     });

@@ -16,10 +16,9 @@
 
 package com.ibm.sbt.services.endpoints;
 
-import org.apache.http.impl.client.DefaultHttpClient;
-
-import com.ibm.sbt.security.authentication.AuthenticationException;
-import com.ibm.sbt.services.client.ClientServicesException;
+import com.ibm.commons.runtime.Context;
+import com.ibm.commons.runtime.RuntimeConstants;
+import com.ibm.sbt.security.authentication.oauth.consumer.oauth_10a.servlet.OAClientAuthentication;
 import com.ibm.sbt.services.endpoints.js.JSReference;
 
 /**
@@ -27,74 +26,38 @@ import com.ibm.sbt.services.endpoints.js.JSReference;
  * 
  * @author mwallace
  */
-public class GadgetOAuthEndpoint extends AbstractEndpoint {
-	
-	private String _serviceName;
+public class GadgetOAuthEndpoint extends OAuth2Endpoint {
 
-	/**
-	 * @return the serviceName
-	 */
-	public String getServiceName() {
-		return _serviceName;
-	}
-
-	/**
-	 * @param serviceName the serviceName to set
-	 */
-	public void setServiceName(String serviceName) {
-		_serviceName = serviceName;
-	}
-
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see com.ibm.sbt.services.endpoints.AbstractEndpoint#getAuthenticator(java.lang.String)
 	 */
 	@Override
 	public JSReference getAuthenticator(String endpointName) {
 		JSReference reference = new JSReference("sbt/authenticator/GadgetOAuth");
+		Context ctx = Context.get();
+		StringBuilder b = new StringBuilder();
+		RuntimeConstants.get().appendBaseProxyUrl(b, ctx);
+		b.append("/");
+		b.append(OAClientAuthentication.URL_PATH);
+		b.append('/');
+		b.append(endpointName);
+		String url = b.toString();
+		reference.getProperties().put("url", url);
 		return reference;
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
 	 * @see com.ibm.sbt.services.endpoints.AbstractEndpoint#getTransport(java.lang.String, java.lang.String)
 	 */
 	@Override
 	public JSReference getTransport(String endpointName, String moduleId) {
 		JSReference reference = new JSReference("sbt/GadgetTransport");
-		reference.getProperties().put("serviceName", getServiceName());
-    	return reference;
+		String serviceName = getServiceName();
+		if (serviceName != null) {
+			reference.getProperties().put("serviceName", serviceName);
+		}
+		return reference;
 	}
-	
-	/* (non-Javadoc)
-	 * @see com.ibm.sbt.services.endpoints.Endpoint#isAuthenticated()
-	 */
-	@Override
-	public boolean isAuthenticated() throws ClientServicesException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.ibm.sbt.services.endpoints.Endpoint#authenticate(boolean)
-	 */
-	@Override
-	public void authenticate(boolean force) throws ClientServicesException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	/* (non-Javadoc)
-	 * @see com.ibm.sbt.services.endpoints.Endpoint#initialize(org.apache.http.impl.client.DefaultHttpClient)
-	 */
-	@Override
-	public void initialize(DefaultHttpClient httpClient) throws ClientServicesException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void logout() throws AuthenticationException {
-		// TODO Auto-generated method stub
-		
-	}
-
 }
