@@ -23,25 +23,26 @@
 <%@page import="com.ibm.commons.runtime.util.ParameterProcessor"%>
 <%@page import="com.ibm.commons.runtime.Context"%>
 <%@page import="com.ibm.sbt.playground.assets.RootNode"%>
-<%@page import="com.ibm.sbt.playground.assets.jssnippets.JSSnippet"%>
+<%@page import="com.ibm.sbt.playground.assets.jssnippets.GadgetSnippet"%>
 <%@page import="com.ibm.sbt.playground.assets.Node"%>
 <%@page import="java.util.List"%>
 <%@page import="com.ibm.sbt.playground.assets.CategoryNode"%>
 <%@page import="com.ibm.sbt.sample.web.util.SnippetFactory"%>
 <%
-RootNode rootNode = SnippetFactory.getJsSnippets(application);
+RootNode rootNode = SnippetFactory.getGadgetSnippets(application);
 String snippetName = request.getParameter("snippet");
-JSSnippet snippet = (JSSnippet)rootNode.loadAsset(SnippetFactory.getJsRootFile(application), snippetName);
+GadgetSnippet snippet = (GadgetSnippet)rootNode.loadAsset(SnippetFactory.getJsRootFile(application), snippetName);
 String[] labels = snippet.getLabels();
 String name = (labels != null && labels.length > 0) ? labels[0] : snippetName;
 String html = null;
 String js = null;
 String css = null;
+String xml = null;
 if (snippet != null) {
 	html = snippet.getHtml();
 	js = snippet.getJs();
 	css = snippet.getCss();
-	
+	xml = snippet.getXml()!=null?snippet.getXml():"";	
 	// replace substitution variables
 	if (js != null) {
 		js = ParameterProcessor.process(js);
@@ -52,6 +53,7 @@ if (snippet != null) {
   <ModulePrefs title="Social Business Toolkit Sample - <%=name%>">
     <Require feature="settitle"/>
     <Require feature="dynamic-height"/>
+    <%=xml %>
   </ModulePrefs>
   <Content type="html">
 <![CDATA[

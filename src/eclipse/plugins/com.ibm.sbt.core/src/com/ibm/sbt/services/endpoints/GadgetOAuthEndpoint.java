@@ -28,6 +28,8 @@ import com.ibm.sbt.services.endpoints.js.JSReference;
  */
 public class GadgetOAuthEndpoint extends OAuth2Endpoint {
 
+	private static final int	authenticationErrorCode	= 403;
+
 	/*
 	 * (non-Javadoc)
 	 * @see com.ibm.sbt.services.endpoints.AbstractEndpoint#getAuthenticator(java.lang.String)
@@ -59,5 +61,10 @@ public class GadgetOAuthEndpoint extends OAuth2Endpoint {
 			reference.getProperties().put("serviceName", serviceName);
 		}
 		return reference;
+	}
+
+	@Override
+	public int getAuthenticationErrorCode() {
+		return authenticationErrorCode;
 	}
 }
