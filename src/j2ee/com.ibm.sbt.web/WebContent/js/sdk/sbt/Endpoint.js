@@ -242,6 +242,9 @@ var Endpoint = declare("sbt.Endpoint", null, {
 									self.xhr(method,args,hasBody);
 								}
 							};
+							if (data.response) {
+								options.response = data.response;
+							}
 							if(self.authenticator.authenticate(options)) {
 								return;
 							}
