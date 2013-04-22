@@ -18,7 +18,7 @@
  * Social Business Toolkit SDK. 
  * Definition of the authentication mechanism for OAuth 1.0.
  */
-define([ "sbt/_bridge/declare", "sbt/lang" ], function(declare,lang) {
+define([ "sbt/declare", "sbt/lang", "sbt/dom" ], function(declare,lang,dom) {
 
     /**
      * OpenSocial OAuth authentication.
@@ -36,11 +36,14 @@ define([ "sbt/_bridge/declare", "sbt/lang" ], function(declare,lang) {
          */
         authenticate : function(options) {
             var onOpen = function() {
+            	alert("It's open");
             };
             var onClose = function() {
+            	alert("It's closed");
             };
             var popup = new gadgets.oauth.Popup(this.url, null, onOpen, onClose);
-            popup.createOpenerOnClick();
+            
+            popup.createOpenerOnClick()();
         }
     });
 });
