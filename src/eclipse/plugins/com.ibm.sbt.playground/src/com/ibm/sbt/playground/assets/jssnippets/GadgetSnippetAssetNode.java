@@ -17,8 +17,8 @@ public class GadgetSnippetAssetNode extends JSSnippetAssetNode {
 	}
 
 	@Override
-	public JSSnippet load(VFSFile root) throws IOException {
-		return super.load(root);
+	public GadgetSnippet load(VFSFile root) throws IOException {
+		return (GadgetSnippet) super.load(root);
 	}
 
 	@Override

@@ -15,7 +15,7 @@ function login(loginUi) {
 	require(['sbt/Endpoint',"sbt/dom","sbt/config"], function(Endpoint,dom,config) {
 		config.Properties["loginUi"] = loginUi;
 		Endpoint.find("connectionsOA2").xhrGet({
-			serviceName : "Connections",
+			serviceName : "connections",
 			authType: "oauth",
 	        serviceUrl : "/profiles/atom/profile.do",
 	        handleAs : "text",
