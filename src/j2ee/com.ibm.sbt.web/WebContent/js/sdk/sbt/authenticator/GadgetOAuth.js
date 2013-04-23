@@ -40,8 +40,10 @@ define([ "sbt/declare", "sbt/lang", "sbt/dom" ], function(declare,lang,dom) {
             };
             var onClose = function() {
             	alert("It's closed");
+            	options.callback();
             };
-            var popup = new gadgets.oauth.Popup(this.url, null, onOpen, onClose);
+            var windowOptions = 'height=700,width=650';
+            var popup = new gadgets.oauth.Popup(this.url, windowOptions, onOpen, onClose);
             
             popup.createOpenerOnClick()();
         }
