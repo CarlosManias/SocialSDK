@@ -42,17 +42,18 @@ window._sbt_bridge_compat = true;
 	* 
 	*/ 
 	var global = window;
-	var currentModule;
+	var currentModule = null;
 	
 	var _load = dojo._loadModule; 
 	dojo._loadModule = dojo.require = function(/*String*/moduleName, /*Boolean?*/omitModuleCheck){
+		var oldModule = currentModule; 
 		currentModule = moduleName;
 		try {
 			return _load.apply(null,arguments);
 		} catch(ex){ 
 			console.log(ex.message);
 		} finally {
-			currentModule = null;
+			currentModule = oldModule;
 		}
 	};
 	
@@ -79,11 +80,12 @@ window._sbt_bridge_compat = true;
 			// do relative path resolution
 			if (relativeId.charAt(0) === '.') {
 				relativeId = name.substring(0, name.lastIndexOf('/') + 1)
-						+ relativeId;
-				while (lastId !== relativeId) {
-					var lastId = relativeId;
-					relativeId = relativeId.replace(/\/[^\/]*\/\.\.\//, '/');
-				}
+							+ relativeId;
+					while (lastId !== relativeId) {
+						var lastId = relativeId;
+						relativeId = relativeId.replace(/\/[^\/]*\/\.\.\//, '/');
+					}
+				
 				relativeId = relativeId.replace(/\/\.\//g, '/');
 			}
 			return relativeId.replace(/\//g, ".");
@@ -92,10 +94,11 @@ window._sbt_bridge_compat = true;
 		for ( var args = [], depName, i = 0; i < deps.length; i++) {
 			depName = resolvePath(deps[i]);
             var arg;
-			// look for dojo/i18n! followed by anything for a resource module
+			// check has an plugin been specified
 			var exclamationIndex = depName.indexOf("!");
 			if (exclamationIndex > -1) {
-				if (depName.substring(0, exclamationIndex) == "sbt.i18n") {
+			    var pluginName = depName.substring(0, exclamationIndex);
+				if (pluginName == "sbt.i18n") {
                     var bundleName = depName.substring(exclamationIndex+1);
                     var mod = dojo.require(bundleName);
                     arg = mod.root||mod;
@@ -103,8 +106,9 @@ window._sbt_bridge_compat = true;
                     for(var mi=0; mi<bundles.length; mi++) {
                         dojo.mixin(arg,dojo.require(bundles[mi]));
                     }
-				} else if (depName.substring(0, exclamationIndex) == "sbt.text") {
-                    var fileName = deps[i].substring(exclamationIndex+1);
+				} else if (pluginName == "sbt.text") {
+					exclamationIndex = deps[i].indexOf("!");
+                    var fileName = deps[i].substring(exclamationIndex+1,deps[i].length);
                     if (fileName.charAt(0) == '.') {
                         var loc = dojo.doc.location;
                         var index = loc.pathname.indexOf('/', 1);
@@ -117,7 +121,7 @@ window._sbt_bridge_compat = true;
                         var moduleId = fileName.substring(0, moduleIndex);
                         var url = fileName.substring(moduleIndex+1);
                         arg = dojo.cache(moduleId, url);
-                    }
+                    } 
                 } else {
 					arg = null;
 				}
@@ -209,4 +213,18 @@ window._sbt_bridge_compat = true;
 		return dojo.declare;	
 	});
 	
+	// 4/17/2013: make the new AMD syntax available to the dojo parser
+	var oldGetObject = dojo.getObject; 
+	dojo.getObject = function(/*String*/name, /*Boolean?*/create, /*Object?*/context){
+		if(dojo.isString(name)&&name.indexOf('/')>=0) {
+			// create=true, not supported as we cannot create modules this way
+			// context!=null, not supported as modules cannot have a root context
+			if(!create && !context) {
+				var dottedName = name.replace(/\//g, ".");
+				var m = dojo.require(dottedName);
+				return m;
+			}
+		}
+		return oldGetObject.apply(this,arguments);
+	};	
 })();

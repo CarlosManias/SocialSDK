@@ -69,6 +69,12 @@ public class LibraryServlet extends BaseToolkitServlet {
      * overridden, the default value is %local_application%/service
      */
     static public final String PARAM_SERVICE_URL = "serviceUrl"; //$NON-NLS-1$
+    
+    /**
+     * Servlet parameter which allows the location of the service servlet to be
+     * overridden, the default value is %local_application%/library
+     */
+    static public final String PARAM_LIBRARY_URL = "libraryUrl"; //$NON-NLS-1$
 
     /**
      * Servlet parameter which allows the location of the IFrame content
@@ -94,6 +100,11 @@ public class LibraryServlet extends BaseToolkitServlet {
      */
     static public final String PARAM_ENVIRONMENT = "environment"; //$NON-NLS-1$
 
+    /**
+     * Name of the service creating the libraries.
+     */
+    static public final String LIBRARY_SERVICE_TYPE = "com.ibm.sbt.jslibrary"; //$NON-NLS-1$
+    
     //
     // Default values for library servlet parameters
     //
@@ -101,12 +112,11 @@ public class LibraryServlet extends BaseToolkitServlet {
     static final String DEFAULT_TOOLKIT_EXT_URL = null;
     static final String DEFAULT_JAVASCRIPT_PATH = "/js/sdk"; //$NON-NLS-1$
     static final String DEFAULT_SERVICE_URL = "%local_application%/service"; //$NON-NLS-1$
+    static final String DEFAULT_LIBRARY_URL = "%local_application%/library";
     static final String DEFAULT_IFRAME_PATH = "/xhr/IFrameContent.html"; //$NON-NLS-1$
     static final String DEFAULT_ENDPOINTS = "connections,smartcloud,domino,sametime"; //$NON-NLS-1$
     static final String DEFAULT_CLIENT_PROPERTIES = null; //$NON-NLS-1$
     static final String DEFAULT_ENVIRONMENT = "defaultEnvironment"; //$NON-NLS-1$
-
-    static final String LIBRARY_SERVICE_TYPE = "com.ibm.sbt.jslibrary"; //$NON-NLS-1$
 
     static final String sourceClass = LibraryServlet.class.getName();
     static final Logger logger = Logger.getLogger(sourceClass);
@@ -129,6 +139,7 @@ public class LibraryServlet extends BaseToolkitServlet {
         String defaultToolkitExtUrl = getAppParameter(application, PARAM_TOOLKIT_EXT_URL, DEFAULT_TOOLKIT_EXT_URL);
         String defaultJavaScriptPath = getAppParameter(application, PARAM_JAVASCRIPT_PATH, DEFAULT_JAVASCRIPT_PATH);
         String defaultServiceUrl = getAppParameter(application, PARAM_SERVICE_URL, DEFAULT_SERVICE_URL);
+        String defaultLibraryUrl = getAppParameter(application, PARAM_LIBRARY_URL, DEFAULT_LIBRARY_URL);
         String defaultIFramePath = getAppParameter(application, PARAM_IFRAME_PATH, DEFAULT_IFRAME_PATH);
 
         // load initialisation parameters
@@ -137,10 +148,13 @@ public class LibraryServlet extends BaseToolkitServlet {
         _defaultParams.setToolkitExtUrl(getInitParameter(config, PARAM_TOOLKIT_EXT_URL, defaultToolkitExtUrl));
         _defaultParams.setToolkitExtJsUrl(PathUtil.concat(_defaultParams.getToolkitExtUrl(), getInitParameter(config, PARAM_JAVASCRIPT_PATH, defaultJavaScriptPath), '/'));
         _defaultParams.setServiceUrl(getInitParameter(config, PARAM_SERVICE_URL, defaultServiceUrl));
+        _defaultParams.setLibraryUrl(getInitParameter(config, PARAM_LIBRARY_URL, defaultLibraryUrl));
         _defaultParams.setIframeUrl(PathUtil.concat(_defaultParams.getToolkitUrl(), getInitParameter(config, PARAM_IFRAME_PATH, defaultIFramePath), '/'));
-
         // create the libraries
-        libraries = application.findServices(LIBRARY_SERVICE_TYPE);
+        libraries = readLibraries(application);
+    }
+    protected List<Object> readLibraries(Application application) {
+        return application.findServices(LIBRARY_SERVICE_TYPE);
     }
 
     /*
@@ -253,5 +267,4 @@ public class LibraryServlet extends BaseToolkitServlet {
         }
         return null;
     }
-
 }

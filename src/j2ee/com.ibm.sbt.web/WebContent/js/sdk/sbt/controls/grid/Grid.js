@@ -17,7 +17,7 @@
 /**
  * 
  */
-define([ "sbt/_bridge/declare", "sbt/lang", "sbt/itemFactory", "sbt/widget/grid/_Grid"], 
+define([ "../../declare", "../../lang", "../../itemFactory", "../../widget/grid/_Grid"], 
         function(declare, lang, itemFactory, _Grid) {
 
     /**
@@ -25,7 +25,7 @@ define([ "sbt/_bridge/declare", "sbt/lang", "sbt/itemFactory", "sbt/widget/grid/
      * @namespace sbt.controls.grid
      * @module sbt.controls.grid.Grid
      */
-    declare("sbt.controls.grid.Grid", [ _Grid ], {
+    var Grid = declare([_Grid], {
 
         _strings: {},
         _storeArgs: null,
@@ -45,8 +45,8 @@ define([ "sbt/_bridge/declare", "sbt/lang", "sbt/itemFactory", "sbt/widget/grid/
         hideSorter: false,
         /**FilterTag, is used for sorting and paging, as to only sort as filtered set of results*/
         filterTag: "",
-        /** The name of the endpoint for the grid to use, IE connections,smartcloud */
-        endpointName: null,
+        /**Selected rows are the rows of the grid that have been selected by checking a check box */
+        selectedRows: null,
         
         /**
          * Constructor method for the grid.
@@ -55,21 +55,21 @@ define([ "sbt/_bridge/declare", "sbt/lang", "sbt/itemFactory", "sbt/widget/grid/
          * @param args
          */
         constructor: function(args) {
-        	
-        	if(args.endpoint){
-        		endpointName = args.endpoint;
-        	}
-        	
+        
             lang.mixin(this, args);
+            
+            this.selectedRows = [];
             
             if (!this.store) {
                 if (args && args.storeArgs) {
                     this._storeArgs = args.storeArgs;
+                    this._storeArgs.endpoint = this.endpoint;
                     this.store = this.createDefaultStore(args.storeArgs);
                 } else if (this.options) {
                     this._storeArgs = this.options[this.defaultOption].storeArgs;
                     if (args && args.type && this.options.hasOwnProperty(args.type)) {
                         this._storeArgs = this.options[args.type].storeArgs;
+                        this._storeArgs.endpoint = this.endpoint;
                     }   
                 }
                 this.store = this.createDefaultStore(this._storeArgs);
@@ -150,7 +150,12 @@ define([ "sbt/_bridge/declare", "sbt/lang", "sbt/itemFactory", "sbt/widget/grid/
                this.renderer.render(this, this.gridNode, this.data.items, this.data);
                this.onUpdate(this.data);
            } else if (this.store) {
-               this._doQuery(this.store, { start : 0, count : this.pageSize });
+        	   if(this._activeSortAnchor && this._activeSortIsDesc !== undefined){
+        		   this._doQuery(this.store, { start : 0, count : this.pageSize,sort: [{ attribute: this._activeSortAnchor.sortParameter, descending :this._activeSortIsDesc }] });   
+        	   }else{
+        		   this._doQuery(this.store, { start : 0, count : this.pageSize });
+        	   }
+               
            } else {
               this.renderer.renderEmpty(this, this.gridNode, this.data);
               this.onUpdate(this.data);
@@ -181,6 +186,10 @@ define([ "sbt/_bridge/declare", "sbt/lang", "sbt/itemFactory", "sbt/widget/grid/
 	                		start : 0, count : this.pageSize,
 	                		sort: [{ attribute: this._activeSortAnchor.sortParameter }]
 	                };
+	               
+	                if(this._activeSortIsDesc !== undefined){
+	                	options.sort[0].descending = this._activeSortIsDesc;
+	                }
             	}else{
             		var options = { 
 	                		start : 0, count : this.pageSize,
@@ -194,10 +203,6 @@ define([ "sbt/_bridge/declare", "sbt/lang", "sbt/itemFactory", "sbt/widget/grid/
            	 options.tag = this.filterTag;
             }
             
-            //if sorting is being used
-            if(this._activeSortIsDesc){
-            	options.sort[0].descending = this._activeSortIsDesc;
-            }
             this._doQuery(this.store, options);
             }
         },
@@ -219,6 +224,9 @@ define([ "sbt/_bridge/declare", "sbt/lang", "sbt/itemFactory", "sbt/widget/grid/
 	                    	start : 0, count : this.pageSize ,
 	                    	sort: [{ attribute: this._activeSortAnchor.sortParameter }]
 	                };
+	            	if(this._activeSortAnchor !== undefined){
+	               	 options.sort[0].descending = this._activeSortIsDesc;
+	                }
             	}else {
             		var options = { 
 	                    	start : 0, count : this.pageSize 
@@ -231,32 +239,42 @@ define([ "sbt/_bridge/declare", "sbt/lang", "sbt/itemFactory", "sbt/widget/grid/
              if(this.filterTag != "" && this.filterTag != null){
             	 options.tag = this.filterTag;
              }
-             
-             //if there is sorting
-             if(this._activeSortAnchor){
-            	 options.sort[0].descending = this._activeSortIsDesc;
-             }
              this._doQuery(this.store, options);
             }
         },
         
+        /**Called when the user clicks a checkbox 
+         * The row gets added or removed to an array, 
+         * to retrieve the array call getSelected
+         * @method handleCheckBox*/
+        handleCheckBox: function (el, data, ev){
+        	
+        if(el.checked){
+        	this.selectedRows.push(data);
+        }else if(!el.checked){
+        	var rows = this.getSelected();
+        	for(var i=0;i<rows.length;i++){
+        		if(rows[i].data == data){
+        			//selected row
+        			this.selectedRows.splice(i,1);
+        		}
+        	}
+        }
+         
+        	
+        },
         /**If the grid rows have checkboxes , get a list of the rows which are currently selected
          * (That have a checked checkbox)
          * @method - getSelected
          * */
         getSelected: function() {
             var items = [];
-            var checkboxes = this.renderer._checkboxes;
-            if (checkboxes) {
-                for (var i=0; i<checkboxes.length; i++) {
-                    if (checkboxes[i].element.checked) {
+            if (this.selectedRows) {
+                for (var i=0; i<this.selectedRows.length; i++) {
                         var item = {
-                            index: i,
-                            //data: checkboxes[i].getUserData("item") 
-                            data: checkboxes[i].row
+                            data: this.selectedRows[i]
                         };
                         items.push(item);
-                    }
                 }
             }
             return items;
@@ -345,10 +363,12 @@ define([ "sbt/_bridge/declare", "sbt/lang", "sbt/itemFactory", "sbt/widget/grid/
         
 
         _updateWithError: function(e) {
+        	console.error(e.message);
+        	e = "There Was An Error Communicating With The Server";
            this.renderer.renderError(this, this.gridNode, e);
         }
 
     });
     
-    return sbt.controls.grid.Grid;
+    return Grid;
 });

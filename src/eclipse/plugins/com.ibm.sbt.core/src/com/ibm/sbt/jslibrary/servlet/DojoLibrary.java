@@ -56,7 +56,7 @@ public class DojoLibrary extends AbstractLibrary {
 
 	static private final String[][]	REGISTER_MODULES_AMD	= { { MODULE_SBT, PATH_SBT },
 			                                                    { MODULE_BRIDGE_AMD, PATH_BRIDGE_AMD }, 
-			                                                    { MODULE_SBT_WIDGET_AMD, PATH_DOJO } };
+			                                                    { MODULE_SBT_WIDGET_AMD, PATH_DOJO2 } };
 
 	static private final String[]	REQUIRE_MODULES_AMD		= new String[0];
 	
@@ -66,7 +66,7 @@ public class DojoLibrary extends AbstractLibrary {
                                                                 { MODULE_SBTX_WIDGET, PATH_SBTX_DOJO } };
     
     private static final String[][] REGISTER_EXT_MODULES_AMD= { { MODULE_SBTX, PATH_SBTX }, 
-                                                                { MODULE_SBTX_WIDGET_AMD, null } };
+                                                                { MODULE_SBTX_WIDGET_AMD, PATH_DOJO2 } };
 
 	static private final String		DEFINE_MODULE			= MODULE_CONFIG;
 
@@ -75,9 +75,7 @@ public class DojoLibrary extends AbstractLibrary {
 	 */
 	public DojoLibrary() {
 		// TODO remove hardcoded strings
-		super(NAME, "1.4", ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		minimumAmdVersion = normalizeVersion("1.7.0");
-		minimumDojo2Version = normalizeVersion("1.8.0");
+		this(NAME, "1.4", ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 
 	/**
@@ -88,6 +86,8 @@ public class DojoLibrary extends AbstractLibrary {
 	 */
 	public DojoLibrary(String libraryName, String minimumVersion, String maximumVersion) {
 		super(libraryName, minimumVersion, maximumVersion);
+		minimumAmdVersion = normalizeVersion("1.7.0");
+		minimumDojo2Version = normalizeVersion("1.8.0");
 	}
 
 	/*

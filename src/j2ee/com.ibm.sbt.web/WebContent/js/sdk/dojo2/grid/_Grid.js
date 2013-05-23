@@ -17,13 +17,13 @@
 /**
  * 
  */
-define([ "sbt/_bridge/declare", "sbt/store/AtomStore", "dojo/_base/lang", "dojo/_base/Deferred", "sbt/widget/_TemplatedWidget"], 
+define([ "../../declare", "../../store/AtomStore", "dojo/_base/lang", "dojo/_base/Deferred", "../../widget/_TemplatedWidget"], 
         function(declare, AtomStore, lang, Deferred, _TemplatedWidget) {
 
     /*
      * @module sbt._bridge.grid._Grid
      */
-    declare("sbt._bridge.grid._Grid", [ _TemplatedWidget ], {
+    var _Grid = declare([ _TemplatedWidget ], {
 
         templatePath: require.toUrl("sbt/controls/grid/templates/Grid.html"),
         
@@ -39,12 +39,10 @@ define([ "sbt/_bridge/declare", "sbt/store/AtomStore", "dojo/_base/lang", "dojo/
         /*retrieves the data from the Atom Store*/
         _doQuery: function(store, options, query) {
             query = query || {};
-            
             var self = this;
-            
             var errCallback = lang.hitch(this, this._updateWithError);
-            
             var results = store.query(query, options);
+            
             Deferred.when(results.total, function(totalCount) {
                 Deferred.when(results, function(results) {
                     self.data = {
@@ -67,5 +65,5 @@ define([ "sbt/_bridge/declare", "sbt/store/AtomStore", "dojo/_base/lang", "dojo/
     
     });
     
-    return sbt._bridge.grid._Grid;
+    return _Grid;
 });

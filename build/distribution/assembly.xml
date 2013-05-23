@@ -65,6 +65,7 @@
       <useAllReactorProjects>true</useAllReactorProjects>
       <includes>
         <include>com.ibm.sbt.sample:sbt.sample.web</include>
+        <include>com.ibm.sbt.sample:com.ibm.sbt.landing</include>
         <include>com.ibm.sbt.sample:acme.social.sample.dataapp</include>
         <include>com.ibm.sbt.sample:acme.social.sample.webapp</include>
         <include>com.ibm.sbt.sample:acme.sample.webapp</include>
@@ -139,6 +140,7 @@
 		<include>changelog.txt</include>
 		<include>weekly.txt</include>
       </includes>
+      <lineEnding>crlf</lineEnding>
     </fileSet>
     <fileSet>
       <directory>${build.target}/tomcat</directory>
@@ -319,5 +321,17 @@
       </includes>
     </fileSet>
 	-->
+  <fileSet>
+    <directory>../../workspaces</directory>
+    <outputDirectory>sbtsdk/</outputDirectory>
+    <useDefaultExcludes>false</useDefaultExcludes>
+    <excludes>
+      <exclude>**/.jazzignore</exclude>
+      <exclude>**/.gitignore</exclude>
+    </excludes>
+    <includes>
+      <include>**/*.*</include>
+    </includes>
+  </fileSet>
   </fileSets>
 </assembly>

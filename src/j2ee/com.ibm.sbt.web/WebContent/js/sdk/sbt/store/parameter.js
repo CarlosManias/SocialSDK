@@ -17,7 +17,7 @@
 /**
  * 
  */
-define(["sbt/stringutil", "sbt/Endpoint"], function(stringUtil, Endpoint) {
+define(["../stringUtil", "../Endpoint"], function(stringUtil, Endpoint) {
     var Formatter = {
         defaultFormat: function(param, val) {
             return param.key + "=" + val;

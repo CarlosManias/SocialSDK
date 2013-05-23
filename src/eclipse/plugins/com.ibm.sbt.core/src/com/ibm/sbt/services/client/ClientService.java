@@ -46,6 +46,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Node;
+import com.ibm.commons.runtime.Context;
 import com.ibm.commons.runtime.NoAccessSignal;
 import com.ibm.commons.util.FastStringBuffer;
 import com.ibm.commons.util.PathUtil;
@@ -63,6 +64,7 @@ import com.ibm.commons.xml.DOMUtil;
 import com.ibm.commons.xml.XMLException;
 import com.ibm.commons.xml.util.XMIConverter;
 import com.ibm.sbt.plugin.SbtCoreLogger;
+import com.ibm.sbt.service.debug.ProxyDebugUtil;
 import com.ibm.sbt.services.endpoints.Endpoint;
 import com.ibm.sbt.services.endpoints.EndpointFactory;
 import com.ibm.sbt.services.util.SSLUtil;
@@ -154,6 +156,17 @@ public abstract class ClientService {
 			return endpoint.isForceTrustSSLCertificate();
 		}
 		return false;
+	}
+
+	protected String getHttpProxy() throws ClientServicesException {
+		if (endpoint != null) {
+			String proxyinfo = endpoint.getHttpProxy();
+			if (StringUtil.isEmpty(proxyinfo)) {
+				proxyinfo = Context.get().getProperty("sbt.httpProxy");
+			}
+			return proxyinfo;
+		}
+		return "";
 	}
 
 	protected void forceAuthentication(Args args) throws ClientServicesException {
@@ -900,8 +913,7 @@ public abstract class ClientService {
 
 	protected Object processResponse(HttpClient httpClient, HttpRequestBase httpRequestBase,
 			HttpResponse response, Args args) throws ClientServicesException {
-		if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK
-				&& response.getStatusLine().getStatusCode() != HttpStatus.SC_CREATED) {
+		if (!checkStatus(response.getStatusLine().getStatusCode())) {
 			if (SbtCoreLogger.SBT.isErrorEnabled()) {
 				// Do not throw an exception here as some of the non OK responses are not error cases.
 				SbtCoreLogger.SBT
@@ -919,6 +931,13 @@ public abstract class ClientService {
 			return null;
 		}
 		return _parseResult(httpRequestBase, response, args.handler);
+	}
+
+	private boolean checkStatus(int statusCode) {
+		if (statusCode >= 200 && statusCode < 300) {
+			return true;
+		}
+		return false;
 	}
 
 	// =================================================================
@@ -1087,9 +1106,14 @@ public abstract class ClientService {
 			// certificate for some http requests...
 			// String scheme = httpRequestBase.getURI().getScheme();
 			// if(scheme!=null && scheme.equalsIgnoreCase("https")) {
-			return SSLUtil.wrapHttpClient(httpClient);
+			httpClient = SSLUtil.wrapHttpClient(httpClient);
 			// }
 		}
+		// Capture network traffic through a network proxy like Fiddler or WireShark for debug purposes
+		if (StringUtil.isNotEmpty(getHttpProxy())) {
+			return ProxyDebugUtil.wrapHttpClient(httpClient, getHttpProxy());
+		}
+
 		return httpClient;
 	}
 }

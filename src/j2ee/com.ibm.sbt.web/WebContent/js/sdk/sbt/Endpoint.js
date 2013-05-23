@@ -25,10 +25,10 @@
  * @class Endpoint
  * 
  */
-define(['sbt/_bridge/declare','sbt/lang','sbt/ErrorTransport','sbt/Promise','sbt/pathUtil','sbt/compat'],
-function(declare,lang,ErrorTransport,Promise,pathUtil,compat) {
+define(['./declare','./lang','./ErrorTransport','./Promise','./pathUtil','./compat','./log', './stringUtil', 'sbt/i18n!sbt/nls/Endpoint', './xml'],
+function(declare,lang,ErrorTransport,Promise,pathUtil,compat,log,stringUtil,nls,xml) {
 
-var Endpoint = declare("sbt.Endpoint", null, {
+var Endpoint = declare(null, {
 	
 	/**
 	 * URL of the server used to connect to the endpoint
@@ -183,9 +183,12 @@ var Endpoint = declare("sbt.Endpoint", null, {
                 promise.fullFilled(response.data);
                 promise.response.fullFilled(response);
             }, function(error) {
+            	if(!error.message){
+            		error.message = self.getErrorMessage(error.cause);
+            	}
                 if (self._isAuthRequired(error, options)) {
                     return self._authenticate(url, options, promise);
-                }
+                }                
                 promise.rejected(error);
                 promise.response.rejected(error);
             }
@@ -223,6 +226,9 @@ var Endpoint = declare("sbt.Endpoint", null, {
 		_args.handle = function(data,ioArgs) {
 			if(data instanceof Error) {
 				var error = data;
+				if(!error.message){
+					error.message = self.getErrorMessage(error.cause);
+				} 
 				// check for if authentication is required				
 				if (error.code == 401 || error.code == self.authenticationErrorCode) {
 					var autoAuthenticate =  _args.autoAuthenticate || self.autoAuthenticate || sbt.Properties["autoAuthenticate"];
@@ -501,11 +507,28 @@ var Endpoint = declare("sbt.Endpoint", null, {
         } 
         
         return isAuthErr && isAutoAuth && this.authenticator && !this._authRejected;
+    },
+    getErrorMessage: function(error) {
+        var text = error.responseText || (error.response&&error.response.text);
+        if (text) {
+            try {            	
+                var dom = xml.parse(text);
+                var messages = dom.getElementsByTagName("message");
+                if (messages && messages.length != 0) {                	
+                    text = messages[0].text || messages[0].textContent;                	
+                    text = lang.trim(text);
+                }
+            } catch(ex) {
+                console.log(ex);
+            }
+            return text;
+        } else {
+            return error;
+        }
     }
 	
 });
 
-sbt.Endpoints = {}; // Initially empty
 
 /**
  * Find the specified Endpoint and return it. If the named Endpoint is
@@ -516,8 +539,12 @@ sbt.Endpoints = {}; // Initially empty
  * @param name
  */
 Endpoint.find = function(name){
+	if (!sbt || !sbt.Endpoints) {
+		var nf = !sbt? "sbt" : "sbt.Endpoints";
+		throw new Error(nf+" object not defined");
+	}
     if (!sbt.Endpoints[name]){
-        console.log("Unable to find endpoint named %s, creating it now with an error transport.", name);
+        log.error(stringUtil.substitute(nls.cannot_find_endpoint, [name]));
         var transport = new ErrorTransport(name);
         sbt.Endpoints[name] = new Endpoint({
             "transport" : transport,

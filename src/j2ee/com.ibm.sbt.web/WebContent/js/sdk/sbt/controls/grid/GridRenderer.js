@@ -17,7 +17,7 @@
 /**
  * 
  */
-define([ "sbt/_bridge/declare", "sbt/dom", "sbt/lang", "dojo/string", "sbt/widget/grid/_GridRenderer" ], 
+define([ "../../declare", "../../dom", "../../lang", "dojo/string", "../../widget/grid/_GridRenderer" ], 
          function(declare, dom, lang, string, _GridRenderer) {
 
     /**
@@ -25,7 +25,7 @@ define([ "sbt/_bridge/declare", "sbt/dom", "sbt/lang", "dojo/string", "sbt/widge
      * @class  GridRenderer
      * @namespace  sbt.controls.grid
      */
-    declare("sbt.controls.grid.GridRenderer", [ sbt.widget.grid._GridRenderer ], {
+    var GridRenderer = declare([ _GridRenderer ], {
         /**Strings used in the grid*/
     	nls: null,
     	/**CSS class to be used for tables - see ConnectionsGridRenderer*/
@@ -34,9 +34,6 @@ define([ "sbt/_bridge/declare", "sbt/dom", "sbt/lang", "dojo/string", "sbt/widge
         errorClass: null,
         loadingClass: null,
         loadingImgClass: null,
-        
-        /**Check boxes used in the grid rows - used to check if a row is selected*/
-        _checkboxes: null,
         
         /**Constructor function
          * @method - constructor
@@ -68,7 +65,7 @@ define([ "sbt/_bridge/declare", "sbt/dom", "sbt/lang", "dojo/string", "sbt/widge
               for (var i=0; i<items.length; i++) {
                   this.renderItem(grid, tbody, data, items[i], i, items);
               }
-              this._checkboxes = this._doFindCheckboxes(grid, el, items);
+             
            }
         },
         
@@ -191,7 +188,7 @@ define([ "sbt/_bridge/declare", "sbt/dom", "sbt/lang", "dojo/string", "sbt/widge
             }
            var ediv = this._create("div", {
               "class": this.errorClass,
-              innerHTML: error.message,
+              innerHTML: error,
               role: "alert",
               tabIndex: 0
             }, el, "only");
@@ -411,30 +408,9 @@ define([ "sbt/_bridge/declare", "sbt/dom", "sbt/lang", "dojo/string", "sbt/widge
                     }
                 }
             }
-        },
-        
-        _doFindCheckboxes: function(grid, el, items) {
-            var checkboxes = [];
-            var inputs = (el.all || el.getElementsByTagName("input"));
-            for (var i = 0;i < inputs.length;i++) {
-                if (inputs[i].type == "checkbox") { 
-                    checkboxes.push(inputs[i]);
-                }    
-            }
-            if (checkboxes.length == items.length) {
-                for (var i = 0;i<checkboxes.length;i++) {
-                   // checkboxes[i].setUserData("item", items[i], function() {}); - Deprecated
-                	var checkBox= {
-                		element : checkboxes[i],
-                		row : items[i]	
-                	};
-                	checkboxes[i] = checkBox;
-                }
-            }
-            return checkboxes;
         }
         
     });
     
-    return sbt.controls.grid.GridRenderer;
+    return GridRenderer;
 });

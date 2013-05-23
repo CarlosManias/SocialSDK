@@ -19,10 +19,10 @@
  * @module sbt.smartcloud.FileService
  */
 define(
-		[ 'sbt/_bridge/declare', 'sbt/config', 'sbt/lang', 'sbt/smartcloud/core', 'sbt/xml', 'sbt/xpath', 'sbt/Cache', 'sbt/Endpoint',
-				'sbt/smartcloud/FileConstants', 'sbt/smartcloud/Subscriber', 'sbt/base/BaseService', 'sbt/log', 'sbt/stringutil', 'sbt/validate',
-				'sbt/base/XmlHandler' ], function(declare, cfg, lang, con, xml, xpath, Cache, Endpoint, FileConstants, Subscriber, BaseService, log,
-				stringutil, validate, XmlHandler) {
+		[ 'sbt/declare', 'sbt/config', 'sbt/lang', 'sbt/smartcloud/core', 'sbt/xml', 'sbt/xpath', 'sbt/Cache', 'sbt/Endpoint',
+				'sbt/smartcloud/FileConstants', 'sbt/smartcloud/Subscriber', 'sbt/base/BaseService', 'sbt/base/BaseEntity', 'sbt/log', 'sbt/stringUtil', 'sbt/validate',
+				'sbt/base/XmlHandler', 'sbt/util' ], function(declare, cfg, lang, con, xml, xpath, Cache, Endpoint, FileConstants, Subscriber, BaseService, BaseEntity, log,
+				stringUtil, validate, XmlHandler, util) {
 			
 			var fileHandler = new XmlHandler({xpath_map: FileConstants.xpath_File, xpath_feed_map: FileConstants.xpath_feed_File,nameSpaces:con.namespaces});
 
@@ -46,7 +46,7 @@ define(
 			 * @param {Object} FileService  fileService object
 			 * @param {String} id file id associated with the file.
 			 */
-			var FileEntry = declare("sbt.smartcloud.FileEntry", sbt.base.BaseEntity, {
+			var FileEntry = declare("sbt.smartcloud.FileEntry", BaseEntity, {
 
 				constructor : function(svc, id) {
 					var args = {
@@ -447,7 +447,7 @@ define(
 			 * @param {Object} FileService  fileService object
 			 * @param {String} id file id associated with the file.
 			 */
-			var UserProfile = declare("sbt.smartcloud.UserProfile", sbt.base.BaseEntity, {
+			var UserProfile = declare("sbt.smartcloud.UserProfile", BaseEntity, {
 
 				constructor : function(svc, id) {
 					var args = {
@@ -510,7 +510,7 @@ define(
 			 * @param {String} [options.endpoint=smartcloud]  Endpoint to be used by FileService.
 			 * 		
 			 */
-			var FileService = declare("sbt.smartcloud.FileService", sbt.base.BaseService, {
+			var FileService = declare("sbt.smartcloud.FileService", BaseService, {
 
 				_subscriberId : null,
 				_endpointName : null,
@@ -797,12 +797,12 @@ define(
 											notifyCbNoCache(args, "SUCCESS");
 										},
 										error : function(error) {
-											validate.notifyError(error, args);
+											util.notifyError(error, args);
 										}
 									});
 								};
 								reader.onerror = function(event) {
-									validate.notifyError(error, args);
+									util.notifyError(error, args);
 								};
 								reader.readAsArrayBuffer(files[0]);
 							}
