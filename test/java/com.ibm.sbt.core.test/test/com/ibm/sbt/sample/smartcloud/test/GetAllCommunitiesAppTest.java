@@ -1,13 +1,9 @@
 package com.ibm.sbt.sample.smartcloud.test;
 
-import static org.junit.Assert.assertNotNull;
-import java.util.Collection;
 import org.junit.Ignore;
 import org.junit.Test;
-import com.ibm.sbt.sample.app.GetAllCommunitiesApp;
+
 import com.ibm.sbt.services.BaseUnitTest;
-import com.ibm.sbt.services.client.connections.communities.Community;
-import com.ibm.sbt.services.client.connections.communities.Member;
 /*
  * © Copyright IBM Corp. 2012
  * 
@@ -23,7 +19,6 @@ import com.ibm.sbt.services.client.connections.communities.Member;
  * implied. See the License for the specific language governing 
  * permissions and limitations under the License.
  */
-import com.ibm.sbt.services.client.connections.communities.MemberList;
 
 /**
  * @author Francis 
@@ -33,6 +28,7 @@ public class GetAllCommunitiesAppTest extends BaseUnitTest {
     @Ignore
     @Test
     public void testCommunitiesService() throws Exception {
+    	/*
         GetAllCommunitiesApp app = new GetAllCommunitiesApp("smartcloud", false);
         authenticateEndpoint(app.getEndpoint(), "FrankAdams@try.lotuslive.com", "Password61");
         Collection<Community> communities = app.getPublicCommunities();
@@ -43,6 +39,7 @@ public class GetAllCommunitiesAppTest extends BaseUnitTest {
             MemberList members = app.getCommunityMembers(community);
             assertNotNull("Expected getCommunityMembers to not be null", members);
         }
+        */
             
     }
     

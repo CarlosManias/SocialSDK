@@ -1,13 +1,9 @@
 package com.ibm.sbt.sample.connections.test;
 
-import static org.junit.Assert.assertNotNull;
-import java.util.Collection;
 import org.junit.Ignore;
 import org.junit.Test;
-import com.ibm.sbt.sample.app.GetAllCommunitiesApp;
+
 import com.ibm.sbt.services.BaseUnitTest;
-import com.ibm.sbt.services.client.connections.communities.Community;
-import com.ibm.sbt.services.client.connections.communities.Member;
 /*
  * © Copyright IBM Corp. 2012
  * 
@@ -23,17 +19,17 @@ import com.ibm.sbt.services.client.connections.communities.Member;
  * implied. See the License for the specific language governing 
  * permissions and limitations under the License.
  */
-import com.ibm.sbt.services.client.connections.communities.MemberList;
 
 /**
  * @author Francis 
  * @date 30 May 2013
  */
 public class GetAllCommunitiesAppTest extends BaseUnitTest {
-    @Ignore
+    
+	@Ignore
     @Test
     public void testCommunitiesService() throws Exception {
-        GetAllCommunitiesApp app = new GetAllCommunitiesApp("connections", false);
+        /*GetAllCommunitiesApp app = new GetAllCommunitiesApp("connections", false);
         authenticateEndpoint(app.getEndpoint(), "fadams", "passw0rd");
         Collection<Community> communities = app.getPublicCommunities();
         
@@ -42,7 +38,7 @@ public class GetAllCommunitiesAppTest extends BaseUnitTest {
         for (Community community : communities){
             MemberList members = app.getCommunityMembers(community);
             assertNotNull("Expected getCommunityMembers to not be null", members);
-        }
+        }*/
             
     }
     

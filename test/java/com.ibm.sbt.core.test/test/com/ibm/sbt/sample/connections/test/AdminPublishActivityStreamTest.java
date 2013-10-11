@@ -27,7 +27,6 @@ import com.ibm.commons.util.io.json.JsonException;
 import com.ibm.commons.util.io.json.JsonJavaFactory;
 import com.ibm.commons.util.io.json.JsonJavaObject;
 import com.ibm.commons.util.io.json.JsonParser;
-import com.ibm.sbt.sample.app.AdminPublishActivityStream;
 import com.ibm.sbt.services.BaseUnitTest;
 
 
@@ -40,6 +39,7 @@ public class AdminPublishActivityStreamTest extends BaseUnitTest {
     @Ignore
     @Test
     public void testPost() throws Exception {
+    	/*
         AdminPublishActivityStream apas = new AdminPublishActivityStream("connections", false);
         authenticateEndpoint(apas.getEndpoint(), "admin", "passw0rd");
         
@@ -54,6 +54,7 @@ public class AdminPublishActivityStreamTest extends BaseUnitTest {
         String streamEntry = apas.postToStream(mergeData(template, props));
         
         assertNotNull("Expected to retrieve a non-null response after post to server", streamEntry);
+        */
     }
 
     /*
