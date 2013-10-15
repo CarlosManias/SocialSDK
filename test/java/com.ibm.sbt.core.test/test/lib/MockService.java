@@ -1,9 +1,11 @@
 package lib;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,11 +13,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.StringWriter;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
 import org.apache.http.conn.EofSensorInputStream;
 import org.junit.Test;
+import org.w3c.dom.Node;
 
 import com.ibm.commons.util.io.base64.Base64InputStream;
 import com.ibm.commons.util.io.base64.Base64OutputStream;
@@ -28,11 +33,12 @@ public class MockService extends ClientService {
 	
 	private enum MockMode { RECORD, REPLAY, PASSTHRU }
 	//private MockMode mode = MockMode.PASSTHRU;
-	private MockMode mode = MockMode.RECORD;
+	private MockMode mode = MockMode.REPLAY;
 	private ClientService service;
 
 	//used to know when to append and when to reset the mock file; //TODO will not work if we test with multiple endpoints in the same test run
 	private static final HashSet<String> seen = new HashSet<String>();
+	private static final HashMap<String, BufferedReader> replyStream = new HashMap<String, BufferedReader>();
 
     public MockService(ClientService svc) {
     	this.service = svc;
@@ -51,9 +57,10 @@ public class MockService extends ClientService {
     	Response response = null;
     	switch(this.mode){
 	    	case REPLAY:
-	    		response = replayResponse();
+	    		return replayResponse();
+	    		
 	    	case PASSTHRU:
-	    		response = service.xhr(method, args, content);
+	    		return service.xhr(method, args, content);
 	    	case RECORD:
 	    		try {
 	    		response = service.xhr(method, args, content);
@@ -78,9 +85,20 @@ public class MockService extends ClientService {
 
 			fstream = new FileWriter(file, true);
 			BufferedWriter out = new BufferedWriter(fstream);
-			out.write("<data type='record'>");
+			if (Node.class.isAssignableFrom(response.getData().getClass()))
+				out.write("xml:");
+			else if (EofSensorInputStream.class.isAssignableFrom(response.getData().getClass()))
+				out.write("eofstream:");
+			else	
+			out.write("json:");
+				
+			out.write(String.valueOf( response.getResponse().getStatusLine().getStatusCode() ).trim());
+			out.write(":");
+			out.write(serialize(response.getResponseHeaders()));
+			out.write(":");
 			out.write(serialize(response.getData()));
-			out.write("</data>\n");
+			out.write(":\n");
+			out.flush();
 			out.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -95,9 +113,9 @@ public class MockService extends ClientService {
 
 			fstream = new FileWriter(file, true);
 	        BufferedWriter out = new BufferedWriter(fstream);
-	        out.write("<data type='throwable'>");
+	        out.write("throwable:");
 	        out.write(serialize(response));
-	        out.write("</data>\n");
+	        out.write(":\n");
 	        out.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -122,9 +140,11 @@ public class MockService extends ClientService {
     String serialize(Object o) throws IOException {    	
     	if (o instanceof EofSensorInputStream) return serialize((EofSensorInputStream) o);
     	ByteArrayOutputStream w = new ByteArrayOutputStream();
-    	ObjectOutputStream os = new ObjectOutputStream(new Base64OutputStream(w));
+    	Base64OutputStream base64OutputStream = new Base64OutputStream(w);
+		ObjectOutputStream os = new ObjectOutputStream(base64OutputStream);
     	os.writeObject(o);
     	os.flush();os.close();
+    	base64OutputStream.flush();base64OutputStream.close();
     	System.out.println("CONVERTED OBJECT TO "+w.toString("UTF-8"));
     	return w.toString("UTF-8");
     }
@@ -139,15 +159,47 @@ public class MockService extends ClientService {
 		}
     }
 
-	private Response replayResponse() {
+	private Response replayResponse() throws ClientServicesException {
+		
 		Response response = null;
+		
 		try {
-			File file = getFile(false);
+			BufferedReader r = getReader();
+			String line = r.readLine();
+			String[] parts = line.split(":");
+			if (parts[0].equals("throwable")) {
+				Object o = deserialize(parts[1]);
+				if (o instanceof ClientServicesException) {
+					throw (ClientServicesException) o;
+				}
+				if (o instanceof RuntimeException) {
+					throw (RuntimeException) o;
+				}
+				throw new ClientServicesException((Throwable) o);
+			}
+			
+			if (parts[0].equals("eofstream")) {		
+				EofSensorInputStream st = null;
+				if (parts.length==4)
+				st = new EofSensorInputStream(
+						new Base64InputStream(new ByteArrayInputStream(parts[3].getBytes())),null);
+				else
+					st = new EofSensorInputStream(new ByteArrayInputStream("".getBytes()),null);
+				Response ret = new Response(st);
+				ret.setHeaders((Header[])deserialize(parts[2]));
+				
+				//TODO: set status code
+				return ret;
+			}
+
+			Response ret = new Response(deserialize(parts[3]));
+			ret.setHeaders((Header[])deserialize(parts[2]));
+			//TODO: set status code
+			return ret;
+			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new ClientServicesException(e);
 		}
-		return response;
 	}
 
 	private StackTraceElement getStackTraceElement() {
@@ -170,14 +222,7 @@ public class MockService extends ClientService {
 	}
 
 	private File getFile(boolean write) throws IOException {
-		StackTraceElement trace = getStackTraceElement();
-		String basePath = System.getProperty("user.dir");
-		String className = trace.getClassName().replace(".", File.separator);
-		String methodName = trace.getMethodName();
-		String path = new StringBuilder(basePath).append(File.separator)
-				.append("test").append(File.separator).append(className)
-				.append(File.separator).append(methodName).append(".mock")
-				.toString();
+		String path = getPath();
 		boolean reset = !seen.contains(path);
 		seen.add(path);
 		
@@ -189,6 +234,28 @@ public class MockService extends ClientService {
 		if (!file.exists())
 			file.createNewFile();
 		return file;
+	}
+
+	private BufferedReader getReader() throws IOException {
+		String path = getPath();
+		if (replyStream.containsKey(path)){
+			return replyStream.get(path);
+		}
+		BufferedReader ret = new BufferedReader(new FileReader(new File(path)));
+		replyStream.put(path,ret);
+		return ret;
+	}
+	
+	private String getPath() {
+		StackTraceElement trace = getStackTraceElement();
+		String basePath = System.getProperty("user.dir");
+		String className = trace.getClassName().replace(".", File.separator);
+		String methodName = trace.getMethodName();
+		String path = new StringBuilder(basePath).append(File.separator)
+				.append("test").append(File.separator).append(className)
+				.append(File.separator).append(methodName).append(".mock")
+				.toString();
+		return path;
 	}
 
 }

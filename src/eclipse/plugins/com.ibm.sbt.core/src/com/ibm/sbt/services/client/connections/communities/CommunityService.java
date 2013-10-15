@@ -561,7 +561,7 @@ public class CommunityService extends BaseService {
 	}
 	
 	private String extractCommunityIdFromHeaders(Response requestData){
-		Header[] headers = requestData.getResponse().getAllHeaders();
+		Header[] headers = requestData.getResponseHeaders();
 		String urlLocation = "";
 		for (Header header: headers){
 			if (header.getName().equalsIgnoreCase("Location")) {
