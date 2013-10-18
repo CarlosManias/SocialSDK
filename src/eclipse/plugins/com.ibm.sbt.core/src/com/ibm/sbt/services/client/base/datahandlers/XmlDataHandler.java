@@ -18,11 +18,11 @@ package com.ibm.sbt.services.client.base.datahandlers;
 
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import org.w3c.dom.Node;
 
@@ -107,7 +107,6 @@ public class XmlDataHandler implements DataHandler<Node> {
 	 * This method returns a list of nodes from an XPathExpression
 	 */
 	private String[] getAsArray(XPathExpression xpathExpression) {
-		List<String> list = new ArrayList<String>();
 		String[] results = null;
 		if (data instanceof Node) {
 			XResult xResult = null;
@@ -302,10 +301,11 @@ public class XmlDataHandler implements DataHandler<Node> {
      * @throws DataHandlerException 
      */
 	@Override
-	public Date getAsDate(FieldEntry field, final Locale locale) throws DataHandlerException {
+	public Date getAsDate(FieldEntry field) throws DataHandlerException {
 		String value = getAsString(field);
 		Date date = null;
-		DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT, locale);
+
+		DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 		try {
 			if(value != null) {
 				date = format.parse(value);
@@ -322,10 +322,10 @@ public class XmlDataHandler implements DataHandler<Node> {
      * @return value as Date 
      */
 	@Override
-	public Date getAsDate(String fieldName, final Locale locale) {
+	public Date getAsDate(String fieldName) {
 		String value = getAsString(fieldName);
 		Date date = null;
-		DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT, locale);
+		DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 		try {
 			date = format.parse(value);
 		} catch(ParseException e) {
@@ -333,26 +333,7 @@ public class XmlDataHandler implements DataHandler<Node> {
 		return date;
 	}
 	
-    /**
-     * @param field
-     * @return value as Date 
-     * @throws DataHandlerException 
-     */
-	@Override
-	public Date getAsDate(FieldEntry field) throws DataHandlerException {
-		return getAsDate(field, Locale.getDefault());
-	}
-	
-    /**
-     * @param fieldName
-     * @return value as Date 
-     */
-	@Override
-	public Date getAsDate(String fieldName) {
-		return getAsDate(fieldName, Locale.getDefault());
-	}
-	
-    /**
+	/**
      * @param fieldName
      * @return value as Date 
      */

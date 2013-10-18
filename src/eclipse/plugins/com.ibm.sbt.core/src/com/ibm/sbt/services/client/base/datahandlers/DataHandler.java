@@ -18,7 +18,6 @@ package com.ibm.sbt.services.client.base.datahandlers;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * This abstract class defines an interface to decouple the data format used so that it can be be replaced easily for another format. 
@@ -30,10 +29,8 @@ public interface DataHandler<DataType> {
 	
 	public String getAsString(FieldEntry field);
 	public String getAsString(String field);
-	public Date getAsDate(FieldEntry fieldName, final Locale locale) throws DataHandlerException;
 	public Date getAsDate(FieldEntry field) throws DataHandlerException;
 	public Date getAsDate(String field) throws DataHandlerException;
-	public Date getAsDate(String field, final Locale locale) throws DataHandlerException;
 	public int getAsInt(FieldEntry fieldName);
 	public int getAsInt(String fieldName);
 	public float getAsFloat(FieldEntry fieldName);
