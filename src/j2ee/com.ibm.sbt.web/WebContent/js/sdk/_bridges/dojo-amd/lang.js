@@ -54,6 +54,9 @@ define(['dojo/_base/lang'],function(lang) {
         },
         trim: function(str) {
             return lang.trim(str);
+        },
+        hitch: function(scope, fun) {
+        	return lang.hitch(scope, fun);
         }
 	};
 });

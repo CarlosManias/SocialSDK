@@ -54,6 +54,9 @@ define([],function() {
         },
         trim: function(str) {
             return dojo.trim(str);
+        },
+        hitch: function(scope, fun) {
+        	return dojo.hitch(scope, fun);
         }
 	};
 });

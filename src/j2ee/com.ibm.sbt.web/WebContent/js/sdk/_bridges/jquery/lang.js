@@ -144,6 +144,9 @@ define(["has", "./jquery"],function(has) {
         },
         trim: function(str) {
             return jQuery.trim(str);
+        },
+        hitch: function(scope, fun) {
+        	return jQuery.proxy(fun, scope);
         }
 	};
 });
