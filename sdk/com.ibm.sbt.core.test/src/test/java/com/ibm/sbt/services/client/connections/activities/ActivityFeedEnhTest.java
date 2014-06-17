@@ -199,8 +199,8 @@ public class ActivityFeedEnhTest extends BaseActivityServiceTest {
 		
 		// Populate source activity and update
 		srcActivityNode1.addField(textField);
-		srcActivityNode2.addField(hiddenTextField);
-		srcActivityNode3.addField(dateField);
+		srcActivityNode2.addField(dateField);
+		srcActivityNode3.addField(hiddenTextField);
 		srcActivityNode1 = activityService.createActivityNode(srcActivityNode1);
 		srcActivityNode2 = activityService.createActivityNode(srcActivityNode2);
 		srcActivityNode3 = activityService.createActivityNode(srcActivityNode3);
